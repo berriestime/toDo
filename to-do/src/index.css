@@ -29,12 +29,10 @@ code {
   display: flex;
 }
 
-/* .item {
-  background-color: #ccc;
-  margin-right: 1em;
-  padding: 0.5em 0.5em;
-} */
-
 .featured{
   background-color: #ccc;
+}
+
+.done{
+  text-decoration: line-through;
 }
