@@ -1,18 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ToDoList from "./components/ToDoList/ToDoList.jsx";
 import "./index.css";
 import Context from "./context.jsx";
-import AddToDo from "./components/AddToDo/AddToDo.jsx";
+import Loader from "./Loader.js";
+import Modal from "./Modal/Modal.js";
+
+const AddToDo = React.lazy(() => import("./components/AddToDo/AddToDo.jsx"));
 
 function App() {
-  const [todos, setTodos] = React.useState([
-    { id: 1, completed: false, title: "Пройти курс Минина по реакту" },
-    { id: 2, completed: false, title: "Запушить работу за день на гит" },
-    { id: 3, completed: true, title: "Codewars" },
-    { id: 4, completed: false, title: "itGirls week" },
-    { id: 5, completed: false, title: "design" },
-    { id: 6, completed: false, title: "English test" },
-  ]);
+  const [todos, setTodos] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/todos?_limit=5")
+      .then((response) => response.json())
+      .then((todos) => {
+        setTimeout(() => {
+          setTodos(todos);
+          setLoading(false);
+        }, 2000);
+      });
+  }, []);
 
   function toggleTodo(id) {
     setTodos(
@@ -29,25 +37,32 @@ function App() {
     setTodos(todos.filter((todo) => todo.id !== id));
   }
 
+  function addToDo(title) {
+    setTodos(
+      todos.concat([
+        {
+          title,
+          id: Date.now(),
+          completed: false,
+        },
+      ])
+    );
+  }
+
   return (
     <Context.Provider value={{ removeToDo }}>
       <div className="wrapper">
-        <header>
-          <h1>Профессиональная техника для обжарщиков</h1>
-          <nav className="title">
-            <ul className="nav">
-              <li>Главная</li>
-              <li>Ростеры</li>
-              <li>Кофеварки</li>
-              <li className="featured">Акции!</li>
-            </ul>
-          </nav>
-        </header>
         <h1>React tutorial</h1>
-        <AddToDo />
+        <Modal></Modal>
+
+        <React.Suspense fallback={<p>Loading...</p>}>
+          <AddToDo onCreate={addToDo} />
+        </React.Suspense>
+
+        {loading && <Loader />}
         {todos.length ? (
           <ToDoList todos={todos} onToggle={toggleTodo} />
-        ) : (
+        ) : loading ? null : (
           <p>No todos!</p>
         )}
       </div>
